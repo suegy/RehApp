@@ -1,0 +1,7 @@
+[
+  { "id": "core", "order": 1, "state": "in_progress", "titleKey": "module_core", "detailKey": "module_core_detail", "prerequisites": [] },
+  { "id": "coping", "order": 2, "state": "locked", "titleKey": "module_coping", "detailKey": "module_coping_detail", "prerequisites": [{ "moduleId": "core", "minimumProgress": 100 }] },
+  { "id": "drug_habits", "order": 3, "state": "locked", "titleKey": "module_drug_habits", "detailKey": "module_drug_habits_detail", "prerequisites": [{ "moduleId": "core", "minimumProgress": 100 }, { "profileField": "hasDrugExperience", "equals": true }] },
+  { "id": "alcohol_habits", "order": 4, "state": "locked", "titleKey": "module_alcohol_habits", "detailKey": "module_alcohol_habits_detail", "prerequisites": [{ "moduleId": "core", "minimumProgress": 100 }, { "profileField": "underAged", "equals": true }] },
+  { "id": "alcohol_habits_over_18", "order": 5, "state": "locked", "titleKey": "module_alcohol_habits_over_18", "detailKey": "module_alcohol_habits_over_18_detail", "prerequisites": [{ "moduleId": "core", "minimumProgress": 100 }, { "profileField": "underAged", "equals": false }] }
+]

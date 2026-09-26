@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KI Support Platform - Design Reference</title>
+  <style>
+    :root { --ink: #17322e; --muted: #50635f; --paper: #f7f6f0; --surface: #fffef9; --line: #d7ddd5; --teal: #176b62; --coral: #d75d48; --gold: #d79b31; --info: #dff1ee; --question: #fff1d6; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 Arial, sans-serif; }
+    main { width: min(960px, calc(100% - 32px)); margin: 40px auto 72px; }
+    h1, h2, h3 { line-height: 1.2; } h1 { font-size: 2.3rem; margin-bottom: 0; } h2 { border-top: 1px solid var(--line); margin-top: 42px; padding-top: 28px; } h3 { color: var(--teal); margin-bottom: 4px; }
+    a { color: var(--teal); } code { background: #e8ece7; border-radius: 3px; padding: 1px 5px; } li { margin: 5px 0; }
+    .lede { color: var(--muted); font-size: 1.1rem; } .tag { background: var(--info); border-radius: 999px; color: var(--ink); display: inline-block; font-size: .82rem; font-weight: bold; margin: 4px 5px 0 0; padding: 3px 10px; }
+    .callout { background: var(--surface); border-left: 5px solid var(--teal); box-shadow: 0 2px 10px #17322e12; margin: 20px 0; padding: 14px 18px; } .open { border-color: var(--gold); background: var(--question); } .risk { border-color: var(--coral); }
+    table { border-collapse: collapse; display: block; max-width: 100%; overflow-x: auto; } th, td { border: 1px solid var(--line); padding: 9px 11px; text-align: left; vertical-align: top; } th { background: #e6eee9; } .status { font-weight: bold; white-space: nowrap; } .confirmed { color: #176b62; } .proposed { color: #9a6700; } .open-status { color: #b1422c; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>KI Support Platform</h1>
+  <p class="lede">Living design and implementation reference. Update this document whenever a product, visual, technical, or data decision changes.</p>
+  <p><span class="tag">Version 0.1</span><span class="tag">24 September 2026</span><span class="tag">Owner: product and development team</span></p>
+
+  <h2>1. Current Baseline</h2>
+  <ul>
+    <li>The Flutter visual shell is implemented in <code>lib/main.dart</code>: the responsive login, language toggle, scroll-collapsing menu, notification banner, roots-style home path, compact expanding follow-up modules, and the core-module view.</li>
+    <li>Theme colors, typography, input/button styling, and material texture live in <code>lib/app/app_theme.dart</code>. UI locale files, module-list JSON, and localized Markdown content live in <code>content/</code> and are loaded by <code>lib/app/app_content.dart</code>.</li>
+    <li>Login uses PocketBase email/password authentication against the configured endpoint and restores a valid SDK session token. Passwords are never persisted by the app, logged, or embedded in source; the password form controller is cleared immediately after an authentication request. The local endpoint is suitable only for development and must be replaced with HTTPS for deployment.</li>
+    <li><strong>Mock/data-preview status:</strong> the home-path module states, notification, progress, core completion, questionnaires, media controls, and assignment save action are currently local visual/data previews. They do not yet read or write PocketBase records.</li>
+    <li>The browser build has been verified with <code>flutter build web</code>; static analysis and the widget test suite pass.</li>
+    <li>Flutter web is enabled. <code>web/manifest.json</code> already declares <code>portrait-primary</code>.</li>
+    <li>The primary delivery target is a mobile-phone browser in portrait orientation. The layout must remain usable when a browser permits landscape or when viewed on a larger screen.</li>
+  </ul>
+
+  <h2>2. Product Scope</h2>
+  <table><thead><tr><th>Area</th><th>Requirement</th><th>Status</th></tr></thead><tbody>
+    <tr><td>Authentication</td><td>Show a branded login screen with email and password. Authenticate users through PocketBase. The PocketBase base URL is a single easily changed constant near the top of <code>lib/main.dart</code>.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Test account</td><td>Provide <code>test@test.se</code> / <code>tester45</code> for development and testing. It must be removable without changing production application behavior.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Navigation</td><td>After login, show a top bar with an information action, notification access, and logout. It collapses upward by default and is reopened from a three-dots control at top right by tap or pointer hover.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Notifications</td><td>List current notifications. When one or more are active, show a visually distinct notification box directly below the menu.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Learning path</td><td>Show three module cards in a vertical, snake-like arrangement. Module selection, order, and availability depend on the user's account and task progress.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Module content</td><td>Render structured lecture content: full Markdown, external links, video, and audio. Include assignments for written responses, audio recordings, and questionnaires.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Questionnaires</td><td>Support text fields, yes/no, and 3-, 5-, 7-, or 10-point Likert scales. Submit responses to the database.</td><td class="status confirmed">Confirmed</td></tr>
+    <tr><td>Localization</td><td>Support English and Swedish for content and UI. The language choice must persist for the user.</td><td class="status confirmed">Confirmed</td></tr>
+  </tbody></table>
+
+  <h2>3. Experience and Visual Direction</h2>
+  <p><strong>Decision:</strong> use a soft, optimistic, youthful visual language rather than a generic business dashboard. Pastel color, irregular friendly geometry, and a light background texture make the experience approachable while text, contrast, and controls retain accessibility.</p>
+  <p><strong>Visual reference:</strong> <a href="VisualDesign.html">VisualDesign.html</a> is the interactive mobile-first prototype for this direction. It includes the login, home path, and core-module content view. Module content is presented as a scrollable sequence of friendly, distinct block cards for text, media, and assignments. Approve or revise it before Flutter implementation; its named color tokens map directly to the proposed Flutter theme tokens.</p>
+  <table><thead><tr><th>Element</th><th>Choice</th></tr></thead><tbody>
+    <tr><td>Theme tokens</td><td>Define semantic colors, typography, spacing, radii, border shapes, and elevations in one Flutter theme file. Use an easy-reading system font stack (Verdana, Tahoma, Arial, sans-serif) for body and controls. Initial palette: pastel violet navigation/action, lilac and paper surfaces, peach and mint accents, butter attention, and dark plum text. Use material-like surface texture: soft tone-on-tone gradients, broad light falloff, and extremely faint grain aligned to the surrounding pastel. Avoid visible dots, stripes, or high-contrast decorative patterns. Cards use a white surface, border, and shadow to establish separation. Add a restrained tonal highlight to buttons without reducing label contrast. Do not hard-code these values in feature widgets.</td></tr>
+    <tr><td>Mobile frame</td><td>Single-column content constrained to a readable maximum width, 16-24 px horizontal padding, minimum 44 x 44 px targets, safe-area padding, and vertical scrolling. Portrait is the designed layout.</td></tr>
+    <tr><td>Home path</td><td>The current module is a full-size numbered card. Following modules stay compact but descend in an alternating left-right-left sequence of balloon-like cards on a roots-inspired path, rather than sitting in a horizontal row or directly below one another. Use a mostly vertical root trunk made from restrained cubic Bezier curves; it may drift gently but must not zigzag across the path. Separate Bezier branches cross horizontally only to reach an offset child module or avoid an intervening card. A balloon expands on pointer hover, keyboard focus, or focus within to reveal its description and action. Cards use deliberately varied rounded corners, small rotation, light panel texture, dashed locked borders, offset shadows, and asymmetric border widths instead of uniform rectangular outlines. Touch interaction must expand a follow-up card on its first tap before any navigation action. The visual path must retain a linear reading and tab order.</td></tr>
+    <tr><td>Module flow</td><td>Within a module, ordered learning blocks remain a wide, readable single-column sequence. Alternate blocks may shift slightly left/right around a quiet vertical guide to echo the path visual without making reading order or scanability ambiguous.</td></tr>
+    <tr><td>Collapsed header</td><td>The header slides upward after a short idle/scroll period, leaving an always visible top-right three-dots button. Tap toggles it. Pointer hover expands it for desktop browsers; hover must not be the only way to reveal actions.</td></tr>
+    <tr><td>Notification box</td><td>Place below the revealed/collapsed header area. Use an icon, heading, plain language, and an optional action. It must not rely only on color and must be announced accessibly.</td></tr>
+    <tr><td>Language control</td><td>Use compact lowercase ISO 639-1 codes: <code>sv</code> and <code>en</code>. The selected option uses <code>aria-pressed</code>; each option has its full localized accessible name. This is available in the collapsed menu and login screen.</td></tr>
+    <tr><td>Accessibility</td><td>Meet WCAG 2.2 AA contrast, support keyboard navigation and screen readers, preserve user text scaling, label every media and form control, and provide captions/transcripts for video/audio content. Texture and decorative irregularity must never reduce legibility or communicate state alone.</td></tr>
+  </tbody></table>
+
+  <h2>4. Language Architecture</h2>
+  <ul>
+    <li>Use Flutter's <code>gen_l10n</code> with English and Swedish ARB files for all application UI strings, validation text, dates, labels, and accessibility labels.</li>
+    <li>Store authored module content as localized records in PocketBase, keyed by stable module and block identifiers plus locale (<code>en</code>, <code>sv</code>). Do not embed learning content as UI strings in Dart.</li>
+    <li>Choose the first language from the browser locale, allow users to switch language from the information/settings view, and persist the selection in the user profile. Fall back to Swedish for supplied content, then English when no selected-language translation exists.</li>
+    <li>Visual elements are language-aware: allow translated titles to wrap, use directional/semantic icons rather than text in images, and localize media captions, transcripts, and alt text.</li>
+  </ul>
+
+  <h2>5. Content Model</h2>
+  <p>A module is an ordered set of typed blocks. This makes the current introduction and future modules data-managed rather than custom Flutter screens.</p>
+  <table><thead><tr><th>Block type</th><th>Fields</th><th>Rendering</th></tr></thead><tbody>
+    <tr><td>Markdown</td><td>localized Markdown body, optional title</td><td>Sanitized full Markdown renderer with headings, lists, emphasis, links, quotes, and code. External links require a visible external-link cue and open safely in a new browser context.</td></tr>
+    <tr><td>Video / audio</td><td>media asset/URL, localized title, description, caption/transcript, duration</td><td>Native accessible controls, loading/error state, transcript/caption access, and a link fallback.</td></tr>
+    <tr><td>Assignment</td><td>prompt, response type, required flag, completion criteria</td><td>Text editor or audio recorder with save/submission state. Audio is uploaded as a PocketBase file and referenced by the response record.</td></tr>
+    <tr><td>Questionnaire</td><td>questions, response type, required flag, scale size and endpoint labels</td><td>One question per clear group; Likert scale of 3, 5, 7, or 10 points; text field; or yes/no choice. Validation prevents incomplete required submissions.</td></tr>
+  </tbody></table>
+  <h3>Editable Content Source</h3>
+  <ul>
+    <li>Maintain UI translations in <code>content/locales/&lt;locale&gt;.json</code>, the ordered home path in <code>content/modules.json</code>, and each module's authored content in <code>content/modules/&lt;module-key&gt;/&lt;locale&gt;.md</code>, outside <code>lib</code>.</li>
+    <li>Module IDs and locale JSON keys are stable across translations. The module list defines order, state, title key, and detail key; a translator can add or replace one Markdown file without changing Flutter code.</li>
+    <li>Use <code>TODO:</code> text only where approved content or a media reference has not been supplied. Production publishing must reject any remaining TODO marker.</li>
+    <li>The current Flutter visual shell reads these source assets directly. A future content-import command will validate the JSON and Markdown files and upsert them to PocketBase.</li>
+    <li>Add module descriptions, module-list entries, and translations by editing these content files. The accompanying <code>content/README.md</code> defines the authoring contract.</li>
+  </ul>
+
+  <h3>Initial Core / Introduction Module</h3>
+  <p><strong>Availability:</strong> every user starts here; there are no prerequisites. The supplied Swedish source is the canonical initial content. Working English translations are available in <code>content/modules/core/en.md</code>; unprovided body copy, media text, and transcripts remain placeholders pending editorial approval.</p>
+  <ol>
+    <li>Markdown: <em>Välkommen till programmet!</em></li>
+    <li>Video, 2-3 minutes: <em>Att växa upp med en förälder som dricker eller använder droger</em>.</li>
+    <li>Markdown sections: <em>Svåra barndomsupplevelser</em>, <em>Vanliga känslomässiga reaktioner</em>, and <em>Motstridiga känslor och komplexa relationer</em>.</li>
+    <li>Video, 2-3 minutes: <em>Uppväxten påverkar oss på olika sätt / Du påverkar hur ditt liv utvecklas</em>.</li>
+    <li>Markdown bullet lists: protective/helpful factors; risk factors for dependency and mental ill-health.</li>
+    <li>Three illustrated videos, approximately 2 minutes each: Noa, Yasmin, and Kim.</li>
+    <li>Assignment: <em>Må bra aktiviteter</em>, with an introduction and optional expandable examples.</li>
+    <li>Planning/evaluation questionnaire: <em>Vad ska jag göra?</em>, <em>När ska jag göra det?</em>, and <em>Hur kändes det att göra aktiviteten?</em>.</li>
+  </ol>
+  <div class="callout open"><strong>Content dependency:</strong> no media files, URLs, transcripts, Swedish Markdown copy beyond the supplied headings, or approved English translations have yet been provided. The implementation can create placeholders and data structure, but must not invent clinical content.</div>
+  <div class="callout open"><strong>Core-module implementation status:</strong> <code>content/modules/core/sv.md</code> now reflects the supplied sequence, including five individually named films. The app renders each <code>Film</code> heading as a media placeholder. The assignment form is visual only and does not yet separate planning from evaluation or persist responses.</div>
+  <h3>Coping Module</h3>
+  <p><strong>Availability:</strong> requires the core module to be completed at 100%. The rule is stored in <code>content/modules.json</code> as <code>{ "moduleId": "core", "minimumProgress": 100 }</code>. The current preview keeps Coping locked because progress evaluation is not yet connected to PocketBase.</p>
+  <p><strong>Source:</strong> <code>content/modules/coping/sv.md</code> contains the supplied Swedish four-film structure. <code>content/modules/coping/en.md</code> is an explicit English translation placeholder.</p>
+  <h3>Mina drogvanor Module</h3>
+  <p><strong>Availability:</strong> requires the core module to be completed at 100% and the user-profile field <code>hasDrugExperience</code> to equal <code>true</code>. Both conditions are stored in <code>content/modules.json</code>. The profile condition is not yet evaluated against PocketBase, so this module remains locked in the current preview.</p>
+  <p><strong>Source:</strong> <code>content/modules/drug_habits/sv.md</code> contains the supplied Swedish two-film structure. <code>content/modules/drug_habits/en.md</code> is an explicit English translation placeholder.</p>
+  <h3>Mina alkoholvanor Module</h3>
+  <p><strong>Availability:</strong> requires the core module to be completed at 100% and the user-profile field <code>isUnder18</code> to equal <code>true</code>. Both conditions are stored in <code>content/modules.json</code>. The profile condition is not yet evaluated against PocketBase, so this module remains locked in the current preview.</p>
+  <p><strong>Source:</strong> <code>content/modules/alcohol_habits/sv.md</code> contains the supplied Swedish two-film structure, including the shared-film note for Alkohol 18+. <code>content/modules/alcohol_habits/en.md</code> is an explicit English translation placeholder.</p>
+  <div class="callout open"><strong>Questionnaire dependency:</strong> the 19 approved yes/no question texts, their exact assignment to emotional, physical, and risky-situation subscales, display order, scoring, and result guidance have not been supplied. The current questionnaire UI therefore cannot implement this instrument yet.</div>
+  <h3>Mina alkoholvanor 18+ Module</h3>
+  <p><strong>Availability:</strong> requires the core module to be completed at 100% and the user-profile field <code>isUnder18</code> to equal <code>false</code>. Both conditions are stored in <code>content/modules.json</code>. The profile condition is not yet evaluated against PocketBase, so this module remains locked in the current preview.</p>
+  <p><strong>Source:</strong> <code>content/modules/alcohol_habits_over_18/sv.md</code> contains the supplied Swedish two-film, alcohol-consequences, feedback, and diary/goals structure. <code>content/modules/alcohol_habits_over_18/en.md</code> is an explicit English translation placeholder.</p>
+  <div class="callout open"><strong>Feedback and reminders dependency:</strong> the 19 approved questionnaire items, scoring thresholds, individualized feedback copy, and data-retention rules are required before feedback can be implemented. SMS reminders require an approved sender, explicit consent, schedule/frequency, opt-out handling, and a secure server-side delivery service; they must not originate from the Flutter browser client.</div>
+
+  <h2>6. Progress and Rules</h2>
+  <ul>
+    <li>Every module has machine-readable prerequisite rules evaluated from the authenticated user's profile and progress records.</li>
+    <li>The core module is the sole exception: it is always available to a newly authenticated user.</li>
+    <li>Each module's state is <code>locked</code>, <code>available</code>, <code>in_progress</code>, or <code>completed</code>. The home path uses this state rather than hiding modules, so users understand what is next.</li>
+    <li>Personalized order must be supplied by a backend rule or an explicit ordered list on the user profile. The client renders the returned order; it must not contain undocumented clinical decision logic.</li>
+    <li>Define module completion explicitly per module, for example all required blocks viewed/submitted. Completion timestamps and assignment submissions are stored separately for auditability.</li>
+  </ul>
+
+  <h2>7. PocketBase Design</h2>
+  <p><strong>Decision:</strong> PocketBase is the system of record. The browser authenticates through its standard email/password endpoint and stores only the supported authenticated session mechanism. The password is supplied only to the authentication request, password-entry suggestions/autocorrect are disabled, and the in-memory controller is cleared after submission. PocketBase collection API rules must enforce ownership; client-side checks are not security.</p>
+  <table><thead><tr><th>Collection</th><th>Purpose and key fields</th></tr></thead><tbody>
+    <tr><td><code>users</code> (auth)</td><td>id, email, emailVisibility, verified, name, avator, record JSON, underAgend, durgExperience, created, and updated.</td></tr>
+    <tr><td><code>modules</code></td><td>Per-user progression: id, user_id, content JSON, created, and updated.</td></tr>
+    <tr><td><code>module_blocks</code></td><td>Module relation, block type, stable key, order, media file/URL, questionnaire definition, and localized content relation.</td></tr>
+    <tr><td><code>content_translations</code></td><td>Parent kind/key, locale, title, Markdown body, media labels, transcript/caption data.</td></tr>
+    <tr><td><code>assignment_responses</code></td><td>User relation, module/block relation, text response, optional audio file, submission timestamp, status.</td></tr>
+    <tr><td><code>questionnaire_responses</code></td><td>User relation, module/block relation, answer JSON or child answers, submission timestamp. Keep questionnaire version/schema with each response for historical interpretation.</td></tr>
+    <tr><td><code>notifications</code></td><td>User relation, localized title/body, severity, action target, active range, read/dismissed timestamp.</td></tr>
+  </tbody></table>
+  <div class="callout risk"><strong>Security and privacy:</strong> this service processes sensitive wellbeing information. Deploy PocketBase only behind HTTPS, define least-privilege collection rules before client work, restrict uploaded file access, avoid sensitive data in logs/analytics, set retention/deletion policy, and obtain a privacy/security review before real-user release.</div>
+  <p><strong>Development endpoint:</strong> <code>http://127.0.0.1:8291</code>. Set this as the initial <code>pocketBaseUrl</code> value near the top of <code>lib/main.dart</code>. A production HTTPS URL will replace it at deployment.</p>
+  <p><strong>Test user:</strong> create <code>test@test.se</code> with password <code>tester45</code> through a clearly named development-only PocketBase migration or seed script, excluded from production deployment. Remove that one migration/seed entry to remove the user. Never create a known-credential account from browser code or ship it in production.</p>
+  <p><strong>Module-state collection:</strong> use the private <code>modules</code> collection for per-user module progression. Filter records by <code>user_id = @request.auth.id</code>; store each module's <code>moduleId</code>, <code>state</code>, <code>percent</code>, and <code>components</code> in its <code>content</code> JSON field. The components JSON uses stable component IDs: <code>{ "film-1": { "required": true, "state": "completed" } }</code>. The app maps <code>users.underAgend</code> and <code>users.durgExperience</code> to its internal profile-filter names.</p>
+
+  <h2>8. Proposed Flutter Architecture</h2>
+  <ul>
+    <li><code>lib/main.dart</code>: app bootstrap and the one documented <code>pocketBaseUrl</code> configuration constant.</li>
+    <li><strong>Feature-based structure:</strong> <code>lib/auth/</code> contains the login flow, <code>lib/learning_path/</code> contains the home path and navigation header, <code>lib/module_content/</code> renders lesson content, and <code>lib/shared/</code> holds reusable visual widgets. <code>lib/models/</code>, <code>lib/data/</code>, and <code>lib/controllers/</code> provide shared state and content services without dictating feature file placement.</li>
+    <li><code>lib/app/</code>: router, theme tokens, localization configuration, and dependency setup.</li>
+    <li><code>lib/features/auth/</code>, <code>home/</code>, <code>modules/</code>, <code>questionnaires/</code>, <code>notifications/</code>, and <code>settings/</code>: feature-local screens, state, models, and repositories.</li>
+    <li><code>lib/data/pocketbase/</code>: PocketBase client, DTOs, and repositories. Keep PocketBase fields out of presentation widgets.</li>
+    <li>Use the official/maintained PocketBase Dart client, a maintained Markdown renderer with explicitly configured link handling, a web-capable audio-recording package, and a media player package after package compatibility is verified against Flutter web.</li>
+    <li>Use declarative routing so the home, module, and information views have stable browser URLs and protected routes redirect unauthenticated visitors to login.</li>
+  </ul>
+
+  <h2>9. Implementation Plan</h2>
+  <ol>
+    <li><strong>Foundation:</strong> rename starter metadata, remove the counter screen/test, define theme tokens, responsive mobile shell, app routing, and English/Swedish localization scaffold. Verify a portrait browser build. <strong>Status: visual shell implemented; metadata and routing remain to be formalized.</strong></li>
+    <li><strong>Backend contract:</strong> provision PocketBase collections, API rules, the <code>content/</code> importer and validation, core module seed data, and development-only test-user migration. Use <code>http://127.0.0.1:8291</code> for local integration. Document the deployed URL and CORS/origin configuration.</li>
+    <li><strong>Authentication:</strong> add PocketBase session restoration, email/password login, validation, error handling, logout, and protected routes. Put the changeable URL constant in <code>main.dart</code>. <strong>Status: PocketBase client authentication, SDK session restoration, form validation, localized errors, and logout are implemented. Protected routing and production endpoint configuration are pending.</strong></li>
+    <li><strong>Application shell:</strong> build the auto-collapsing accessible menu, three-destination snake path, notification banner/list, information view, and language selector. <strong>Status: menu, visual notification banner, path, follow-up interactions, module navigation, and language selector are implemented; notification data and information view are pending.</strong></li>
+    <li><strong>Content engine:</strong> fetch localized modules and block records; render Markdown, safe external links, video, audio, captions/transcripts, locked state, and progress.</li>
+    <li><strong>Inputs:</strong> implement text and audio assignments, questionnaires, draft/submission/error behavior, PocketBase uploads, and response persistence.</li>
+    <li><strong>Core module:</strong> import the supplied Swedish source, preserve explicit placeholders for missing text/media, connect final approved media and translations, and make it unconditionally available.</li>
+    <li><strong>Quality and release:</strong> unit-test rule evaluation and questionnaire validation; widget-test login/menu/locale/locked states; test mobile browsers and accessibility; conduct privacy/security review; build and deploy web assets.</li>
+  </ol>
+
+  <h2>10. Acceptance Criteria</h2>
+  <ul>
+    <li>A user can log in with valid PocketBase email/password credentials, refresh the browser without an unnecessary login, and log out.</li>
+    <li>Changing the documented URL constant changes the PocketBase endpoint without searching through the project.</li>
+    <li>The menu is reachable by tap, hover, keyboard, and screen reader; it collapses without obscuring content.</li>
+    <li>Active notifications are visible below the menu and the full current-notification list is accessible.</li>
+    <li>Three path cards display in the defined snake visual arrangement while accessibility reading order remains first-to-last.</li>
+    <li>Locale switching changes UI and available authored content, then remains selected on the next session.</li>
+    <li>The core module is open for a new account, while a non-core module cannot open until its prerequisite rule evaluates true.</li>
+    <li>Each supported question type validates and persists an answer owned by the authenticated user.</li>
+  </ul>
+
+  <h2>11. Decisions Required Before Build</h2>
+  <table><thead><tr><th>Question</th><th>Why it matters</th></tr></thead><tbody>
+    <tr><td>Who creates/manages users: PocketBase admin, self-registration, invitation, or an external system?</td><td>Determines onboarding, auth screens, and collection rules.</td></tr>
+    <tr><td>What exact user attributes and approved rules determine module order and prerequisites?</td><td>The requested personalization must be deterministic, reviewable, and safe; no clinical rule should be inferred by the client.</td></tr>
+    <tr><td>Are the initial three modules named and defined beyond the core module?</td><td>Needed to seed the home path and establish initial prerequisites.</td></tr>
+    <tr><td>Which video/audio hosting, source files, captions/transcripts, and usage rights are available?</td><td>Needed for performant, accessible, lawful media delivery.</td></tr>
+    <tr><td>Should users be able to save incomplete assignments/questionnaires as drafts? May they edit submitted answers?</td><td>Determines response schema, completion rules, and UI.</td></tr>
+    <tr><td>What should the information action contain, and are notifications user-created, admin-created, or automated?</td><td>Determines the top-menu views and notification workflow.</td></tr>
+    <tr><td>Is audio recording required in the first release, and what maximum duration/file size/retention applies?</td><td>Browser permission, upload handling, storage costs, and privacy policy depend on this.</td></tr>
+    <tr><td>What branding assets, app name, typography, and accessibility/privacy requirements must be used?</td><td>Initial tokens are intentionally adjustable but need approval before the visual theme is finalized.</td></tr>
+  </tbody></table>
+  <h2>12. Iterative Module Rules Process</h2>
+  <ol>
+    <li>For each module, record its purpose, intended audience, visible title/description, required blocks, and completion definition in its source folder.</li>
+    <li>Before implementing its availability, ask for the exact user facts or completed tasks that unlock it. Record approved rules as data, not implicit Flutter code.</li>
+    <li>Check each new rule against sections 3, 4, 6, and 7 of this document: it must retain a clear locked-state explanation, be localizable, be accessible, protect user data, and be enforced by PocketBase rules or approved backend logic.</li>
+    <li>Seed and test the rule with a representative account before releasing it. Update this document with the rule, rationale, owner, and affected module.</li>
+    <li>Do not invent content or clinical progression. Until details are supplied, retain visible development placeholders and keep only the core module available.</li>
+  </ol>
+  <div class="callout open"><strong>Update rule:</strong> preserve a dated entry in this document when any proposed choice becomes confirmed, is rejected, or is superseded. Add the decision, rationale, owner, and affected implementation area.</div>
+</main>
+</body>
+</html>
